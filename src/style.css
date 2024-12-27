@@ -1,0 +1,11 @@
+:root {
+    /* Couleurs pour le plateau d'échec */
+    --case-blanche: #FFFFFF;    /* Couleur pour les cases blanches */
+    --case-noir: #333333;       /* Couleur pour les cases noires */
+    
+    /* Couleurs de l'interface */
+    --bg-color: #F5F5F5;        /* Couleur de fond */
+    --primary-color: #007BFF;   /* Couleur primaire pour les éléments importants/différenciés */
+    --secondary-color: #FF5733; /* Couleur secondaire pour les détails ou textes */
+    --accent-color: #FF9900;    /* Couleur d'accent pour les boutons ou les surlignages */
+  }

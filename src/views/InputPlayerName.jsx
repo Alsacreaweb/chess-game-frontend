@@ -35,8 +35,9 @@ export default function InputPlayerName() {
           className="p-2 text-center text-xl bg-white rounded-lg border-2 border-[var(--accent-color)] focus:outline-none focus:border-[var(--accent-color)]"
           value={player1}
           onChange={(e) => setPlayer1(e.target.value)}
+          data-aos="fade-down"
         />
-        <div className="flex justify-between gap-4 w-full">
+        <div className="flex justify-between gap-4 w-full" data-aos="fade-up">
           <Button onClick={() => machineSend("DefineStartModePlayGame")}>
             Retour
           </Button>

@@ -1,7 +1,7 @@
 :root {
     /* Couleurs pour le plateau d'échec */
-    --case-blanche: #FFFFFF;    /* Couleur pour les cases blanches */
-    --case-noir: #333333;       /* Couleur pour les cases noires */
+    --case-blanche: #fece9e;    /* Couleur pour les cases blanches */
+    --case-noir: #d18b46;       /* Couleur pour les cases noires */
     
     /* Couleurs de l'interface */
     --bg-color: #F5F5F5;        /* Couleur de fond */

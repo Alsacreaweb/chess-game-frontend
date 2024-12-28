@@ -5,19 +5,23 @@ import DefineStartModePlayGame from "./views/DefineStartModePlayGame";
 import InputPlayerName from "./views/InputPlayerName";
 import InputGameId from "./views/InputGameId";
 import WaitingEnemy from "./views/WaitingEnemy";
+import Playing from "./views/Playing";
 
 function App() {
   const { machineState } = useContext(PlayingContext);
 
   return (
-    <MainLayout>
+    <>
       {machineState === "DefineStartModePlayGame" && (
         <DefineStartModePlayGame />
       )}
       {machineState === "InputPlayerName" && <InputPlayerName />}
       {machineState === "WaitingEnemy" && <WaitingEnemy />}
       {machineState === "InputGameId" && <InputGameId />}
-    </MainLayout>
+      {(machineState === "Playing" ||
+        machineState === "PlayingYourTurn" ||
+        machineState === "PlayingNotYourTurn") && <Playing />}
+    </>
   );
 }
 

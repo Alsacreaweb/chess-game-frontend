@@ -12,12 +12,18 @@ export default createMachine(
         "WaitingEnemy",
         "WaitingEnemy",
         guard(
-          (ctx, event) => event.player1.length > 0 && event.gameId.length > 0
+          (ctx, event) =>
+            event.player1.length > 0 &&
+            event.gameId.length > 0 &&
+            event.colorPlayer1.length > 0 &&
+            event.colorPlayer2.length > 0
         ),
         reduce((ctx, event) => ({
           ...ctx,
           gameId: event.gameId,
           player1: event.player1,
+          colorPlayer1: event.colorPlayer1,
+          colorPlayer2: event.colorPlayer2,
         }))
       ),
       transition("DefineStartModePlayGame", "DefineStartModePlayGame")
@@ -59,5 +65,11 @@ export default createMachine(
     Victory: state(),
     Draw: state(),
   },
-  () => ({ gameId: "", player1: "", player2: "" })
+  () => ({
+    gameId: "",
+    player1: "",
+    colorPlayer1: "",
+    player2: "",
+    colorPlayer2: "",
+  })
 );

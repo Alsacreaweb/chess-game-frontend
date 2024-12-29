@@ -9,11 +9,15 @@ export default function Playing() {
     playerCurrentColor,
     machineState,
     machineSend,
+    colorThisPlayer,
   } = useContext(PlayingContext);
   const [possibleMoves, setPossibleMoves] = useState([]);
 
   useEffect(() => {
-    if (colorPlayer1 === playerCurrentColor) {
+    if (
+      colorPlayer1 === playerCurrentColor &&
+      colorPlayer1 === colorThisPlayer
+    ) {
       machineSend("PlayingYourTurn");
     } else {
       machineSend("PlayingYourTurn");
@@ -39,7 +43,7 @@ export default function Playing() {
           body: JSON.stringify({
             chessBoard,
             selectedPiece,
-            colorPlay: "w",
+            colorPlay: colorThisPlayer.substr(0, 1),
           }),
         }
       );

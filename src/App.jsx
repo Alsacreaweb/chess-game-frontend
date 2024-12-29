@@ -1,6 +1,6 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect } from "react";
 import { PlayingContext } from "./Context";
-import MainLayout from "./layouts/MainLayout";
+import wsInit from "./ws/wsInit";
 import DefineStartModePlayGame from "./views/DefineStartModePlayGame";
 import InputPlayerName from "./views/InputPlayerName";
 import InputGameId from "./views/InputGameId";
@@ -8,7 +8,13 @@ import WaitingEnemy from "./views/WaitingEnemy";
 import Playing from "./views/Playing";
 
 function App() {
-  const { machineState } = useContext(PlayingContext);
+  const { setColorThisPlayer, machineState } = useContext(PlayingContext);
+
+  useEffect(() => {
+    if (setColorThisPlayer) {
+      wsInit(setColorThisPlayer);
+    }
+  }, []);
 
   return (
     <>

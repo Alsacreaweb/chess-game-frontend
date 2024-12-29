@@ -1,7 +1,7 @@
 import { createMachine, guard, reduce, state, transition } from "robot3";
 
 export default createMachine(
-  "Playing", // Initial state
+  "DefineStartModePlayGame", // Initial state
   {
     DefineStartModePlayGame: state(
       transition("InputPlayerName", "InputPlayerName"),
@@ -66,10 +66,10 @@ export default createMachine(
     Draw: state(),
   },
   () => ({
-    gameId: "bvcb45-454654",
-    player1: "Brice",
-    colorPlayer1: "white",
-    player2: "Gregoire",
-    colorPlayer2: "black",
+    gameId: "",
+    player1: "",
+    colorPlayer1: "",
+    player2: "",
+    colorPlayer2: "",
   })
 );

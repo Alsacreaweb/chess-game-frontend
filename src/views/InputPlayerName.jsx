@@ -52,11 +52,6 @@ export default function InputPlayerName() {
 
   return (
     <MainLayout>
-      <p>colorPlayer1</p>
-      {colorPlayer1}
-      <br />
-      <p>colorPlayer2</p>
-      {colorPlayer2}
       <div className="flex flex-col gap-4">
         <h1 className="text-center text-3xl font-600" data-aos="fade-down">
           Configuration d'une nouvelle partie

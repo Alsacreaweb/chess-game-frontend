@@ -4,12 +4,13 @@ import machine from "./utils/machine";
 
 export const PlayingContext = createContext();
 const PlayingProvider = ({ children }) => {
+  const [colorThisPlayer, setColorThisPlayer] = useState("");
   const [gameId, setGameId] = useState("");
   const [player1, setPlayer1] = useState("");
   const [colorPlayer1, setColorPlayer1] = useState("");
   const [player2, setPlayer2] = useState("");
   const [colorPlayer2, setColorPlayer2] = useState("");
-  const [playerCurrentColor, setPlayerCurrentColor] = useState("white");
+  const [playerCurrentColor, setPlayerCurrentColor] = useState("white"); // The first player is white
   const [machineState, machineSend, machineContext] = useMachine(machine);
   const [chessBoard, setChessBoard] = useState({
     a1: {
@@ -145,6 +146,8 @@ const PlayingProvider = ({ children }) => {
   return (
     <PlayingContext.Provider
       value={{
+        colorThisPlayer,
+        setColorThisPlayer,
         gameId,
         setGameId,
         colorPlayer1,

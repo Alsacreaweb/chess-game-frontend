@@ -5,7 +5,43 @@ export default createMachine(
   {
     DefineStartModePlayGame: state(
       transition("InputPlayerName", "InputPlayerName"),
-      transition("InputGameId", "InputGameId")
+      transition("InputGameId", "InputGameId"),
+      transition(
+        "InputGameIdWhenUrl",
+        "InputGameId",
+        guard(
+          (ctx, event) =>
+            event.gameId.length > 0 &&
+            event.player1.length > 0 &&
+            event.colorPlayer1.length > 0 &&
+            event.colorPlayer2.length > 0
+        ),
+        reduce((ctx, event) => ({
+          ...ctx,
+          gameId: event.gameId,
+          player1: event.player1,
+          colorPlayer1: event.colorPlayer1,
+          colorPlayer2: event.colorPlayer2,
+        }))
+      ),
+      transition(
+        "WaitingEnemy",
+        "WaitingEnemy",
+        guard(
+          (ctx, event) =>
+            event.gameId.length > 0 &&
+            event.player1.length > 0 &&
+            event.colorPlayer1.length > 0 &&
+            event.colorPlayer2.length > 0
+        ),
+        reduce((ctx, event) => ({
+          ...ctx,
+          gameId: event.gameId,
+          player1: event.player1,
+          colorPlayer1: event.colorPlayer1,
+          colorPlayer2: event.colorPlayer2,
+        }))
+      )
     ),
     InputPlayerName: state(
       transition(
@@ -29,7 +65,26 @@ export default createMachine(
       transition("DefineStartModePlayGame", "DefineStartModePlayGame")
     ),
     WaitingEnemy: state(
-      transition("Playing", "Playing"),
+      transition(
+        "Playing",
+        "Playing",
+        guard(
+          (ctx, event) =>
+            event.player1.length > 0 &&
+            event.gameId.length > 0 &&
+            event.player2.length > 0 &&
+            event.colorPlayer1.length > 0 &&
+            event.colorPlayer2.length > 0
+        ),
+        reduce((ctx, event) => ({
+          ...ctx,
+          gameId: event.gameId,
+          player1: event.player1,
+          player2: event.player2,
+          colorPlayer1: event.colorPlayer1,
+          colorPlayer2: event.colorPlayer2,
+        }))
+      ),
       transition("DefineStartModePlayGame", "DefineStartModePlayGame")
     ),
     InputGameId: state(
@@ -37,12 +92,21 @@ export default createMachine(
         "Playing",
         "Playing",
         guard(
-          (ctx, event) => event.gameId.length > 0 && event.player2.length > 0
+          (ctx, event) =>
+            // event.gameId.length > 0 &&
+            // event.player1.length > 0 &&
+            // event.colorPlayer1.length > 0 &&
+            // event.player2.length > 0 &&
+            // event.colorPlayer2.length > 0
+            true
         ),
         reduce((ctx, event) => ({
           ...ctx,
           gameId: event.gameId,
+          player1: event.player1,
+          colorPlayer1: event.colorPlayer1,
           player2: event.player2,
+          colorPlayer2: event.colorPlayer2,
         }))
       ),
       transition("DefineStartModePlayGame", "DefineStartModePlayGame")

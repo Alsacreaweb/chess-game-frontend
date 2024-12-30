@@ -1,10 +1,70 @@
+import { useContext, useEffect } from "react";
 import Button from "../components/Button.jsx";
 import MainLayout from "../layouts/MainLayout.jsx";
-import { useContext } from "react";
 import { PlayingContext } from "../Context.jsx";
 
 export default function DefineStartModePlayGame() {
-  const { machineSend } = useContext(PlayingContext);
+  const {
+    machineSend,
+    fetchGameIdExist,
+    player1,
+    player2,
+    colorPlayer1,
+    colorPlayer2,
+    updateUrlWithParams,
+  } = useContext(PlayingContext);
+
+  // Extraction des paramètres de l'URL
+  const queryParameters = new URLSearchParams(window.location.search);
+  const gameId = queryParameters.get("gameId");
+  const player1GetUrl = queryParameters.get("player1");
+  const player2GetUrl = queryParameters.get("player2");
+
+  useEffect(() => {
+    if (!gameId && !player1GetUrl && !player2GetUrl) {
+      return;
+    }
+    if (gameId && !player1GetUrl && !player2GetUrl) {
+      fetchGameIdExist(gameId).then((exists) => {
+        if (exists) {
+          machineSend({
+            type: "InputGameIdWhenUrl",
+            gameId: gameId,
+            player1: player1,
+            colorPlayer1: colorPlayer1,
+            colorPlayer2: colorPlayer2,
+          });
+        } else {
+          updateUrlWithParams();
+        }
+      });
+    } else if (gameId && player1GetUrl && !player2GetUrl) {
+      fetchGameIdExist(gameId).then((exists) => {
+        if (exists) {
+          machineSend({
+            type: "WaitingEnemy",
+            gameId: gameId,
+            player1: player1,
+            colorPlayer1: colorPlayer1,
+            colorPlayer2: colorPlayer2,
+          });
+        } else {
+          updateUrlWithParams();
+        }
+      });
+    }
+  }, [
+    gameId,
+    player1GetUrl,
+    player2GetUrl,
+    player1,
+    player2,
+    colorPlayer1,
+    colorPlayer2,
+    machineSend,
+    fetchGameIdExist,
+    updateUrlWithParams,
+  ]);
 
   return (
     <MainLayout className="flex-col gap-4">
@@ -16,7 +76,7 @@ export default function DefineStartModePlayGame() {
         data-aos="fade-up"
         data-aos-delay="300"
       >
-        Cette application, développé par{" "}
+        Cette application, développée par{" "}
         <a
           href="http://www.alsacreaweb.fr"
           className="text-blue underline hover:opacity-[0.5]"
@@ -24,7 +84,7 @@ export default function DefineStartModePlayGame() {
         >
           Alsacreaweb
         </a>
-        , vous permet de jouer au échec en ligne et en multijoueur.
+        , vous permet de jouer aux échecs en ligne et en multijoueur.
       </p>
       <p
         className="text-center text-xl"

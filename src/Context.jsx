@@ -1,6 +1,8 @@
 import React, { createContext, useState, useEffect } from "react";
 import { useMachine } from "./hooks/useMachine.js";
 import machine from "./utils/machine";
+import { useWebSocket } from "./hooks/useWebSocket.js";
+import { ToastContainer, toast } from "react-toastify";
 
 export const PlayingContext = createContext();
 const PlayingProvider = ({ children }) => {
@@ -142,10 +144,67 @@ const PlayingProvider = ({ children }) => {
       color: "b",
     },
   });
+  const { socketRef, socketConnected, socketEmit, socketOn, socketOff } =
+    useWebSocket(import.meta.env.VITE_WS_URL);
+  const fetchGameIdExist = async (gameId) => {
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/v1/gameid`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            gameId: gameId,
+          }),
+        }
+      );
+
+      if (response.status === 404) {
+        return false;
+      }
+
+      const data = await response.json();
+      setGameId(gameId);
+      setPlayer1(data.player1);
+      setColorPlayer1(data.colorPlayer1);
+      setColorPlayer2(data.colorPlayer2);
+      if (data.player2) {
+        setPlayer2(data.player2);
+      }
+      return { data };
+    } catch (error) {
+      console.error(error);
+      return false;
+    }
+  };
+  const updateUrlWithParams = (params = {}) => {
+    const currentUrl = new URL(window.location.href);
+
+    if (Object.keys(params).length === 0) {
+      currentUrl.search = "";
+    } else {
+      Object.keys(params).forEach((key) => {
+        const value = params[key];
+        if (value !== undefined && value !== null) {
+          currentUrl.searchParams.set(key, value);
+        } else {
+          currentUrl.searchParams.delete(key);
+        }
+      });
+    }
+    window.history.pushState({}, "", currentUrl.toString());
+  };
 
   return (
     <PlayingContext.Provider
       value={{
+        socketRef,
+        socketConnected,
+        socketEmit,
+        socketOn,
+        socketOff,
         colorThisPlayer,
         setColorThisPlayer,
         gameId,
@@ -165,8 +224,23 @@ const PlayingProvider = ({ children }) => {
         machineContext,
         chessBoard,
         setChessBoard,
+        fetchGameIdExist,
+        updateUrlWithParams,
+        toast,
       }}
     >
+      <ToastContainer
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick={false}
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="dark"
+      />
       {children}
     </PlayingContext.Provider>
   );

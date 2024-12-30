@@ -5,10 +5,19 @@ import MainLayout from "../layouts/MainLayout.jsx";
 import Button from "../components/Button.jsx";
 
 export default function InputGameId() {
-  const { gameId, setGameId, player2, setPlayer2, machineSend } =
-    useContext(PlayingContext);
+  const {
+    gameId,
+    setGameId,
+    player2,
+    setPlayer2,
+    machineSend,
+    fetchGameIdExist,
+    updateUrlWithParams,
+    socketEmit,
+    setColorThisPlayer,
+  } = useContext(PlayingContext);
 
-  const handleClick = function () {
+  const handleClick = async function () {
     if (gameId.length === 0 || player2.length === 0) {
       Swal.fire({
         title: "Veuillez entrer un identifiant de partie et votre nom",
@@ -19,7 +28,29 @@ export default function InputGameId() {
         },
       });
     } else {
-      machineSend({ type: "Playing", gameId: gameId, player2: player2 });
+      const gameExists = await fetchGameIdExist(gameId);
+      if (gameExists.data) {
+        updateUrlWithParams({ gameId: gameId, player2: player2 });
+        socketEmit("updateGame", { gameId: gameId, player2: player2 });
+        setColorThisPlayer(gameExists.data.colorPlayer2);
+        machineSend({
+          type: "Playing",
+          gameId: gameId,
+          player1: gameExists.data.player1,
+          colorPlayer1: gameExists.data.colorPlayer1,
+          player2: player2,
+          colorPlayer2: gameExists.data.colorPlayer2,
+        });
+      } else {
+        Swal.fire({
+          title: "Cet identifiant de partie n'existe pas",
+          icon: "warning",
+          confirmButtonText: "Ok",
+          customClass: {
+            confirmButton: "bg-[var(--accent-color)] text-white",
+          },
+        });
+      }
     }
   };
 

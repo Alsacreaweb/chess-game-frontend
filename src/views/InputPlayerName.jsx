@@ -15,6 +15,8 @@ export default function InputPlayerName() {
     setColorPlayer2,
     setGameId,
     machineSend,
+    socketEmit,
+    updateUrlWithParams,
   } = useContext(PlayingContext);
 
   const handleClick = function () {
@@ -37,6 +39,13 @@ export default function InputPlayerName() {
         colorPlayer1: colorPlayer1,
         colorPlayer2: colorPlayer2,
       });
+      socketEmit("createGame", {
+        gameId: gameId,
+        player1: player1,
+        colorPlayer1: colorPlayer1,
+        colorPlayer2: colorPlayer2,
+      });
+      updateUrlWithParams({ gameId: gameId, player1: player1 });
     }
   };
 

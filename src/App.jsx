@@ -9,7 +9,6 @@ import Playing from "./views/Playing";
 
 function App() {
   const { machineState } = useContext(PlayingContext);
-  const { socketConnected } = useWebSocket();
 
   return (
     <>
@@ -21,7 +20,11 @@ function App() {
       {machineState === "InputGameId" && <InputGameId />}
       {(machineState === "Playing" ||
         machineState === "PlayingYourTurn" ||
-        machineState === "PlayingNotYourTurn") && <Playing />}
+        machineState === "PlayingNotYourTurn" ||
+        machineState === "ProposeADrawing" ||
+        machineState === "GiveUp" ||
+        machineState === "Victory" ||
+        machineState === "Draw") && <Playing />}
     </>
   );
 }

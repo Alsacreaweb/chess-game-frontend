@@ -93,12 +93,11 @@ export default createMachine(
         "Playing",
         guard(
           (ctx, event) =>
-            // event.gameId.length > 0 &&
-            // event.player1.length > 0 &&
-            // event.colorPlayer1.length > 0 &&
-            // event.player2.length > 0 &&
-            // event.colorPlayer2.length > 0
-            true
+            event.gameId.length > 0 &&
+            event.player1.length > 0 &&
+            event.colorPlayer1.length > 0 &&
+            event.player2.length > 0 &&
+            event.colorPlayer2.length > 0
         ),
         reduce((ctx, event) => ({
           ...ctx,
@@ -116,11 +115,13 @@ export default createMachine(
       transition("PlayingNotYourTurn", "PlayingNotYourTurn")
     ),
     PlayingYourTurn: state(
+      transition("PlayingNotYourTurn", "PlayingNotYourTurn"),
       transition("ProposeADrawing", "ProposeADrawing"),
       transition("GiveUp", "GiveUp"),
       transition("Victory", "Victory")
     ),
     PlayingNotYourTurn: state(
+      transition("PlayingYourTurn", "PlayingYourTurn"),
       transition("Victory", "Victory"),
       transition("ProposeADrawing", "ProposeADrawing")
     ),

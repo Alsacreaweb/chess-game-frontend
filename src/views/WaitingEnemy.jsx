@@ -1,7 +1,8 @@
 import { useContext, useEffect } from "react";
 import { PlayingContext } from "../Context";
 import Button from "../components/Button";
-import ClipLoader from "react-spinners/ClipLoader";
+import { useBeforeUnload } from "../hooks/useBeforeUnload";
+import copyData from "../utils/copyData";
 
 export default function WaitPlayer() {
   const {
@@ -17,23 +18,16 @@ export default function WaitPlayer() {
     setColorThisPlayer,
   } = useContext(PlayingContext);
 
-  // Fonction pour copier le lien du jeu
-  const copyLink = (gameId) => {
+  useBeforeUnload(
+    "Vous êtes en attente d'un joueur, voulez-vous vraiment quitter la page ?"
+  );
+
+  const handleCopyLink = () => {
     const baseUrl = new URL(window.location.origin);
     baseUrl.searchParams.set("gameId", gameId);
-    if (navigator.clipboard) {
-      navigator.clipboard
-        .writeText(baseUrl.toString())
-        .then(() => {
-          toast("Lien copié dans le presse-papier !");
-        })
-        .catch((err) => {
-          console.error("Failed to copy link:", err);
-        });
-    }
+    copyData(baseUrl.toString(), toast);
   };
 
-  // Utilisation de useEffect pour écouter les mises à jour du jeu via WebSocket
   useEffect(() => {
     socketOn("gameUpdated", (data) => {
       console.log("Le jeu a été mis à jour. Voici les informations :", data);
@@ -50,23 +44,6 @@ export default function WaitPlayer() {
         });
       }
     });
-
-    // Fonction pour avertir l'utilisateur avant de quitter ou de recharger la page
-    const handleBeforeUnload = (event) => {
-      const message =
-        "Vous avez une partie en cours. Êtes-vous sûr de vouloir quitter ?";
-      event.returnValue = message; // Pour les navigateurs modernes
-      return message; // Pour les anciens navigateurs
-    };
-
-    // Ajout du listener avant le rechargement ou la fermeture de la page
-    window.addEventListener("beforeunload", handleBeforeUnload);
-
-    // Clean-up : Retirer l'écouteur lors du démontage du composant
-    return () => {
-      socketOff("gameUpdated");
-      window.removeEventListener("beforeunload", handleBeforeUnload);
-    };
   }, [
     gameId,
     player1,
@@ -87,9 +64,14 @@ export default function WaitPlayer() {
         de votre partie à partager à votre adversaire
       </p>
       <div className="space-y-2 text-center">
-        <Button href={`/?gameId=${gameId}`} onClick={() => copyLink(gameId)}>
-          Copier le lien de connexion
-        </Button>
+        <div>
+          <Button onClick={() => handleCopyLink()}>
+            Copier le lien de connexion
+          </Button>
+          <Button onClick={() => machineSend("DefineStartModePlayGame")}>
+            Quitter
+          </Button>
+        </div>
         <p>ID de connexion : {gameId}</p>
       </div>
       <div className="flex flex-col justify-center items-center gap-4">
@@ -97,13 +79,6 @@ export default function WaitPlayer() {
           Veuillez patienter pendant que votre adversaire se connecte à votre
           partie
         </p>
-        <ClipLoader
-          color={"#FF9900"}
-          loading={true}
-          size={150}
-          aria-label="Loading Spinner"
-          data-testid="loader"
-        />
       </div>
     </div>
   );

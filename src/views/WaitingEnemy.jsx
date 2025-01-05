@@ -28,22 +28,40 @@ export default function WaitPlayer() {
     copyData(baseUrl.toString(), toast);
   };
 
+  const handleExit = () => {
+    const baseUrl = new URL(window.location.origin);
+    baseUrl.search = "";
+    window.history.replaceState(null, "", baseUrl.toString());
+    fetch(`${import.meta.env.VITE_API_URL}/v1/exitGame`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        gameId: gameId,
+      }),
+    });
+    machineSend("DefineStartModePlayGame");
+  };
+
   useEffect(() => {
-    socketOn("gameUpdated", (data) => {
-      console.log("Le jeu a été mis à jour. Voici les informations :", data);
+    const onGameUpdated = (data) => {
       if (data.player2) {
         setPlayer2(data.player2);
         setColorThisPlayer(colorPlayer1);
         machineSend({
           type: "Playing",
-          gameId: gameId,
-          player1: player1,
-          colorPlayer1: colorPlayer1,
+          gameId,
+          player1,
+          colorPlayer1,
           player2: data.player2,
-          colorPlayer2: colorPlayer2,
+          colorPlayer2,
         });
       }
-    });
+    };
+
+    socketOn("gameUpdated", onGameUpdated);
+    return () => socketOff("gameUpdated", onGameUpdated);
   }, [
     gameId,
     player1,
@@ -52,6 +70,8 @@ export default function WaitPlayer() {
     machineSend,
     socketOn,
     socketOff,
+    setPlayer2,
+    setColorThisPlayer,
   ]);
 
   return (
@@ -64,14 +84,8 @@ export default function WaitPlayer() {
         de votre partie à partager à votre adversaire
       </p>
       <div className="space-y-2 text-center">
-        <div>
-          <Button onClick={() => handleCopyLink()}>
-            Copier le lien de connexion
-          </Button>
-          <Button onClick={() => machineSend("DefineStartModePlayGame")}>
-            Quitter
-          </Button>
-        </div>
+        <Button onClick={handleCopyLink}>Copier le lien de connexion</Button>
+        <Button onClick={() => handleExit()}>Quitter</Button>
         <p>ID de connexion : {gameId}</p>
       </div>
       <div className="flex flex-col justify-center items-center gap-4">

@@ -9,3 +9,8 @@
     --secondary-color: #FF5733; /* Couleur secondaire pour les détails ou textes */
     --accent-color: #FF9900;    /* Couleur d'accent pour les boutons ou les surlignages */
   }
+
+  .swal2-confirm {
+    background-color: var(--accent-color) !important;
+    color: white !important;
+  }

@@ -16,6 +16,7 @@ export default function WaitPlayer() {
     socketOff,
     machineSend,
     setColorThisPlayer,
+    updateUrlWithParams,
   } = useContext(PlayingContext);
 
   useBeforeUnload(
@@ -29,9 +30,7 @@ export default function WaitPlayer() {
   };
 
   const handleExit = () => {
-    const baseUrl = new URL(window.location.origin);
-    baseUrl.search = "";
-    window.history.replaceState(null, "", baseUrl.toString());
+    updateUrlWithParams();
     fetch(`${import.meta.env.VITE_API_URL}/v1/exitGame`, {
       method: "POST",
       headers: {

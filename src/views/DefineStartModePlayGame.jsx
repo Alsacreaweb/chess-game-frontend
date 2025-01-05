@@ -15,36 +15,21 @@ export default function DefineStartModePlayGame() {
 
   const queryParameters = new URLSearchParams(window.location.search);
   const gameId = queryParameters.get("gameId");
-  const player1GetUrl = queryParameters.get("player1");
-  const player2GetUrl = queryParameters.get("player2");
 
   useEffect(() => {
-    if (!gameId || (!player1GetUrl && !player2GetUrl)) return;
-
+    if (!gameId) return;
     fetchGameIdExist(gameId).then((exists) => {
       if (!exists) return updateUrlWithParams();
 
-      const actionType =
-        player1GetUrl && !player2GetUrl ? "WaitingEnemy" : "InputGameIdWhenUrl";
       machineSend({
-        type: actionType,
+        type: "InputGameId",
         gameId,
         player1,
         colorPlayer1,
         colorPlayer2,
       });
     });
-  }, [
-    gameId,
-    player1GetUrl,
-    player2GetUrl,
-    player1,
-    colorPlayer1,
-    colorPlayer2,
-    machineSend,
-    fetchGameIdExist,
-    updateUrlWithParams,
-  ]);
+  }, []);
 
   return (
     <MainLayout className="flex-col gap-4">

@@ -56,10 +56,11 @@ export default function Playing() {
     if (machineState === "ProposeADrawing") {
       console.log("Proposer un match nul");
     } else if (machineState === "GiveUp") {
-      console.log("");
+      console.log("Abandonner");
     } else if (machineState === "Victory") {
-      console.log("Proposer un match nul");
+      console.log("Victoire");
     } else if (machineState === "Draw") {
+      console.log("Match nul");
     }
   }, [machineState]);
 
@@ -165,7 +166,7 @@ export default function Playing() {
   };
 
   const handleButtonAction = (action) => {
-    console.log(action);
+    machineSend(action);
   };
 
   return (

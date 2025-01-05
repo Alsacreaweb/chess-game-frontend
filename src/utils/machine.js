@@ -10,7 +10,7 @@ export default createMachine(
         "InputGameIdWhenUrl",
         "InputGameId",
         guard(
-          (ctx, event) =>
+          (_, event) =>
             event.gameId.length > 0 &&
             event.player1.length > 0 &&
             event.colorPlayer1.length > 0 &&
@@ -28,7 +28,7 @@ export default createMachine(
         "WaitingEnemy",
         "WaitingEnemy",
         guard(
-          (ctx, event) =>
+          (_, event) =>
             event.gameId.length > 0 &&
             event.player1.length > 0 &&
             event.colorPlayer1.length > 0 &&
@@ -48,7 +48,7 @@ export default createMachine(
         "WaitingEnemy",
         "WaitingEnemy",
         guard(
-          (ctx, event) =>
+          (_, event) =>
             event.player1.length > 0 &&
             event.gameId.length > 0 &&
             event.colorPlayer1.length > 0 &&
@@ -69,7 +69,7 @@ export default createMachine(
         "Playing",
         "Playing",
         guard(
-          (ctx, event) =>
+          (_, event) =>
             event.player1.length > 0 &&
             event.gameId.length > 0 &&
             event.player2.length > 0 &&

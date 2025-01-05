@@ -3,7 +3,7 @@ import { PlayingContext } from "../Context";
 import Swal from "sweetalert2";
 import MainLayout from "../layouts/MainLayout";
 import Button from "../components/Button";
-import { v4 as uuidv4 } from "uuid";
+import { nanoid, customAlphabet } from "nanoid";
 
 export default function InputPlayerName() {
   const {
@@ -19,43 +19,39 @@ export default function InputPlayerName() {
     updateUrlWithParams,
   } = useContext(PlayingContext);
 
-  const handleClick = function () {
-    if (player1.length === 0 || colorPlayer1.length === 0) {
+  const nanoid = customAlphabet("abcdefghijklmnopqrstuvwxyz", 3);
+
+  const handleClick = () => {
+    if (!player1 || !colorPlayer1) {
       Swal.fire({
         title: "Veuillez entrer votre nom et choisir une couleur",
         icon: "warning",
         confirmButtonText: "Ok",
-        customClass: {
-          confirmButton: "bg-[var(--accent-color)] text-white",
-        },
       });
-    } else {
-      let gameId = uuidv4();
-      setGameId(gameId);
-      machineSend({
-        type: "WaitingEnemy",
-        gameId: gameId,
-        player1: player1,
-        colorPlayer1: colorPlayer1,
-        colorPlayer2: colorPlayer2,
-      });
-      socketEmit("createGame", {
-        gameId: gameId,
-        player1: player1,
-        colorPlayer1: colorPlayer1,
-        colorPlayer2: colorPlayer2,
-      });
-      updateUrlWithParams({ gameId: gameId, player1: player1 });
+      return;
     }
+
+    const newGameId = nanoid();
+    setGameId(newGameId);
+    machineSend({
+      type: "WaitingEnemy",
+      gameId: newGameId,
+      player1,
+      colorPlayer1,
+      colorPlayer2,
+    });
+    socketEmit("createGame", {
+      gameId: newGameId,
+      player1,
+      colorPlayer1,
+      colorPlayer2,
+    });
+    updateUrlWithParams({ gameId: newGameId, player1 });
   };
 
   useEffect(() => {
-    if (colorPlayer1.length !== 0) {
-      if (colorPlayer1 === "white") {
-        setColorPlayer2("black");
-      } else {
-        setColorPlayer2("white");
-      }
+    if (colorPlayer1) {
+      setColorPlayer2(colorPlayer1 === "white" ? "black" : "white");
     }
   }, [colorPlayer1]);
 
@@ -82,6 +78,7 @@ export default function InputPlayerName() {
                 className={
                   colorPlayer1 === "white" ? "opacity-50" : "opacity-100"
                 }
+                alt="White"
               />
               <input
                 type="radio"
@@ -99,6 +96,7 @@ export default function InputPlayerName() {
                 className={
                   colorPlayer1 === "black" ? "opacity-50" : "opacity-100"
                 }
+                alt="Black"
               />
               <input
                 type="radio"

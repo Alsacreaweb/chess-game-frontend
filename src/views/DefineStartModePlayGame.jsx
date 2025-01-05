@@ -8,57 +8,37 @@ export default function DefineStartModePlayGame() {
     machineSend,
     fetchGameIdExist,
     player1,
-    player2,
     colorPlayer1,
     colorPlayer2,
     updateUrlWithParams,
   } = useContext(PlayingContext);
 
-  // Extraction des paramètres de l'URL
   const queryParameters = new URLSearchParams(window.location.search);
   const gameId = queryParameters.get("gameId");
   const player1GetUrl = queryParameters.get("player1");
   const player2GetUrl = queryParameters.get("player2");
 
   useEffect(() => {
-    if (!gameId && !player1GetUrl && !player2GetUrl) {
-      return;
-    }
-    if (gameId && !player1GetUrl && !player2GetUrl) {
-      fetchGameIdExist(gameId).then((exists) => {
-        if (exists) {
-          machineSend({
-            type: "InputGameIdWhenUrl",
-            gameId: gameId,
-            player1: player1,
-            colorPlayer1: colorPlayer1,
-            colorPlayer2: colorPlayer2,
-          });
-        } else {
-          updateUrlWithParams();
-        }
+    if (!gameId || (!player1GetUrl && !player2GetUrl)) return;
+
+    fetchGameIdExist(gameId).then((exists) => {
+      if (!exists) return updateUrlWithParams();
+
+      const actionType =
+        player1GetUrl && !player2GetUrl ? "WaitingEnemy" : "InputGameIdWhenUrl";
+      machineSend({
+        type: actionType,
+        gameId,
+        player1,
+        colorPlayer1,
+        colorPlayer2,
       });
-    } else if (gameId && player1GetUrl && !player2GetUrl) {
-      fetchGameIdExist(gameId).then((exists) => {
-        if (exists) {
-          machineSend({
-            type: "WaitingEnemy",
-            gameId: gameId,
-            player1: player1,
-            colorPlayer1: colorPlayer1,
-            colorPlayer2: colorPlayer2,
-          });
-        } else {
-          updateUrlWithParams();
-        }
-      });
-    }
+    });
   }, [
     gameId,
     player1GetUrl,
     player2GetUrl,
     player1,
-    player2,
     colorPlayer1,
     colorPlayer2,
     machineSend,

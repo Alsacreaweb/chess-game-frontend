@@ -117,18 +117,33 @@ export default createMachine(
     PlayingYourTurn: state(
       transition("PlayingNotYourTurn", "PlayingNotYourTurn"),
       transition("ProposeADrawing", "ProposeADrawing"),
+      transition("Draw", "Draw"),
+      transition("DrawRefuse", "DrawRefuse"),
       transition("GiveUp", "GiveUp"),
-      transition("Victory", "Victory")
+      transition("Victory", "Victory"),
+      transition("DefineStartModePlayGame", "DefineStartModePlayGame")
     ),
     PlayingNotYourTurn: state(
       transition("PlayingYourTurn", "PlayingYourTurn"),
+      transition("GiveUp", "GiveUp"),
       transition("Victory", "Victory"),
-      transition("ProposeADrawing", "ProposeADrawing")
+      transition("ProposeADrawing", "ProposeADrawing"),
+      transition("Draw", "Draw"),
+      transition("DrawRefuse", "DrawRefuse"),
+      transition("DefineStartModePlayGame", "DefineStartModePlayGame")
     ),
-    ProposeADrawing: state("Draw", "Draw"),
+    ProposeADrawing: state(
+      transition("PlayingNotYourTurn", "PlayingNotYourTurn"),
+      transition("PlayingYourTurn", "PlayingYourTurn"),
+      transition("Draw", "Draw")
+    ),
     GiveUp: state(),
-    Victory: state(),
-    Draw: state(),
+    Victory: state(
+      transition("DefineStartModePlayGame", "DefineStartModePlayGame")
+    ),
+    Draw: state(
+      transition("DefineStartModePlayGame", "DefineStartModePlayGame")
+    ),
   },
   () => ({
     gameId: "",

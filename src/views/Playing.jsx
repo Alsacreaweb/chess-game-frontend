@@ -1,8 +1,13 @@
-import { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { PlayingContext } from "../Context";
 import MainLayout from "../layouts/MainLayout";
 import Button from "../components/Button";
 import { useBeforeUnload } from "../hooks/useBeforeUnload";
+import Swal from "sweetalert2";
+import { useWindowSize } from "react-use";
+import Confetti from "react-confetti";
+import ModalWithBackdrop from "../components/ModalWithBackdrop";
 
 export default function Playing() {
   const {
@@ -20,9 +25,13 @@ export default function Playing() {
     colorThisPlayer,
     socketEmit,
     socketOn,
+    toast,
   } = useContext(PlayingContext);
   const [possibleMoves, setPossibleMoves] = useState([]);
   const [selectedPiece, setSelectedPiece] = useState(null);
+  const [isPlayerVictory, setIsPlayerVictory] = useState("");
+  const { width, height } = useWindowSize();
+  const [playerProposeADrawing, setPlayerProposeADrawing] = useState("");
 
   useBeforeUnload(
     "Vous avez une partie en cours. Êtes-vous sûr de vouloir quitter ?"
@@ -37,7 +46,33 @@ export default function Playing() {
         setPlayerCurrentColor("black");
       }
     });
-  }, [socketOn, setChessBoard]);
+    socketOn("action", (data) => {
+      if (data.type === "giveUp") {
+        setIsPlayerVictory(data.playerVictory === "w" ? "black" : "white");
+        machineSend("Victory");
+      }
+      if (data.type === "proposeADrawing") {
+        machineSend("ProposeADrawing");
+      }
+      if (data.type === "proposeADrawingAccept") {
+        machineSend("Draw");
+      }
+      if (data.type === "proposeADrawingRefuse") {
+        if (
+          playerProposeADrawing === colorThisPlayer ||
+          playerProposeADrawing !== undefined
+        ) {
+          toast("Votre adversaire a refusé votre proposition de match nul.");
+        }
+        if (data.playerCurrentColor === colorThisPlayer) {
+          machineSend("PlayingYourTurn");
+        } else {
+          machineSend("PlayingNotYourTurn");
+        }
+        setPlayerProposeADrawing("");
+      }
+    });
+  }, []);
 
   useEffect(() => {
     const isPlayerTurn =
@@ -51,18 +86,6 @@ export default function Playing() {
       machineSend("PlayingNotYourTurn");
     }
   }, [colorPlayer1, playerCurrentColor, colorThisPlayer, machineSend]);
-
-  useEffect(() => {
-    if (machineState === "ProposeADrawing") {
-      console.log("Proposer un match nul");
-    } else if (machineState === "GiveUp") {
-      console.log("Abandonner");
-    } else if (machineState === "Victory") {
-      console.log("Victoire");
-    } else if (machineState === "Draw") {
-      console.log("Match nul");
-    }
-  }, [machineState]);
 
   const getPositionKey = (index) => {
     const columns = ["a", "b", "c", "d", "e", "f", "g", "h"];
@@ -166,7 +189,79 @@ export default function Playing() {
   };
 
   const handleButtonAction = (action) => {
-    machineSend(action);
+    if (action === "GiveUp") {
+      Swal.fire({
+        title: "Êtes-vous sûr de vouloir abandonner ?",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Oui, abandonner",
+        cancelButtonText: "Annuler",
+        customClass: {
+          confirmButton: "bg-[var(--accent-color)] text-white",
+          cancelButton: "bg-gray-300 text-black",
+        },
+      }).then((result) => {
+        if (result.isConfirmed) {
+          socketEmit("action", {
+            action: "giveUp",
+            player: colorThisPlayer,
+            gameId: gameId,
+          });
+          machineSend("DefineStartModePlayGame");
+        }
+      });
+    }
+    if (action === "ProposeADrawing") {
+      Swal.fire({
+        title: "Êtes-vous sûr de vouloir proposer un match nul ?",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Oui, proposer un match nul",
+        cancelButtonText: "Annuler",
+        customClass: {
+          confirmButton: "bg-[var(--accent-color)] text-white",
+          cancelButton: "bg-gray-300 text-black",
+        },
+      }).then((result) => {
+        if (result.isConfirmed) {
+          setPlayerProposeADrawing(colorThisPlayer);
+          socketEmit("action", {
+            action: "proposeADrawing",
+            player: colorThisPlayer,
+            machineState: machineState,
+            gameId: gameId,
+          });
+        }
+      });
+    }
+    if (action === "ProposeADrawingAccept") {
+      Swal.fire({
+        title: "Êtes-vous sûr de vouloir accepter le match nul ?",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Oui, accepter",
+        cancelButtonText: "Annuler",
+        customClass: {
+          confirmButton: "bg-[var(--accent-color)] text-white",
+          cancelButton: "bg-gray-300 text-black",
+        },
+      }).then((result) => {
+        if (result.isConfirmed) {
+          socketEmit("action", {
+            action: "proposeADrawingAccept",
+            player: colorThisPlayer,
+            gameId: gameId,
+          });
+        }
+      });
+    }
+    if (action === "ProposeADrawingRefuse") {
+      socketEmit("action", {
+        action: "proposeADrawingRefuse",
+        playerCurrentColor: playerCurrentColor,
+        gameId: gameId,
+      });
+    }
   };
 
   return (
@@ -231,6 +326,55 @@ export default function Playing() {
           </div>
           <p className="mt-2">Ici devront afficher les pièces jouées</p>
         </div>
+        {machineState === "ProposeADrawing" && (
+          <ModalWithBackdrop
+            message={
+              playerProposeADrawing !== colorThisPlayer
+                ? "Votre adversaire a proposé un match nul."
+                : "Vous avez proposé un match nul, veuillez patienter pendant que votre adversaire accepte ou refuse."
+            }
+            buttons={
+              playerProposeADrawing !== colorThisPlayer ? (
+                <>
+                  <Button
+                    onClick={() => handleButtonAction("ProposeADrawingAccept")}
+                  >
+                    Accepter
+                  </Button>
+                  <Button
+                    onClick={() => handleButtonAction("ProposeADrawingRefuse")}
+                  >
+                    Refuser
+                  </Button>
+                </>
+              ) : null
+            }
+          />
+        )}
+
+        {machineState === "Draw" && (
+          <ModalWithBackdrop
+            message="Votre adversaire a accepté votre proposition de match nul."
+            buttons={
+              <Button onClick={() => machineSend("DefineStartModePlayGame")}>
+                Quitter
+              </Button>
+            }
+          />
+        )}
+
+        {machineState === "Victory" && (
+          <ModalWithBackdrop
+            message="Bravo vous avez gagné la partie !"
+            buttons={
+              <Button onClick={() => machineSend("DefineStartModePlayGame")}>
+                Quitter
+              </Button>
+            }
+          >
+            <Confetti width={width} height={height} />
+          </ModalWithBackdrop>
+        )}
       </div>
     </MainLayout>
   );

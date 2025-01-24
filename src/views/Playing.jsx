@@ -1,5 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
-import { createPortal } from "react-dom";
+import React, { useContext, useEffect, useState, useRef } from "react";
 import { PlayingContext } from "../Context";
 import MainLayout from "../layouts/MainLayout";
 import Button from "../components/Button";
@@ -32,6 +31,15 @@ export default function Playing() {
   const [isPlayerVictory, setIsPlayerVictory] = useState("");
   const { width, height } = useWindowSize();
   const [playerProposeADrawing, setPlayerProposeADrawing] = useState("");
+  const [typeVictory, setTypeVictory] = useState("");
+  const [moves, setMoves] = useState([]);
+  const scrollRef = useRef(null);
+
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [moves]);
 
   useBeforeUnload(
     "Vous avez une partie en cours. Êtes-vous sûr de vouloir quitter ?"
@@ -40,6 +48,7 @@ export default function Playing() {
   useEffect(() => {
     socketOn("pieceMoved", (data) => {
       setChessBoard(data.chessBoard);
+      setMoves(data.moves);
       if (data.playerCurrentColor === "white") {
         setPlayerCurrentColor("white");
       } else {
@@ -49,6 +58,7 @@ export default function Playing() {
     socketOn("action", (data) => {
       if (data.type === "giveUp") {
         setIsPlayerVictory(data.playerVictory === "w" ? "black" : "white");
+        setTypeVictory("GiveUp");
         machineSend("Victory");
       }
       if (data.type === "proposeADrawing") {
@@ -165,6 +175,7 @@ export default function Playing() {
     socketEmit("movePiece", {
       gameId: gameId,
       chessBoard: updatedBoard,
+      piece: chessBoard[selectedPiece].piece,
       playerColor: colorThisPlayer,
       selectedPiece: selectedPiece,
       destination: destination,
@@ -177,6 +188,25 @@ export default function Playing() {
       return player1;
     } else {
       return player2;
+    }
+  };
+
+  const pieceNameFromFirstLetter = (letter) => {
+    switch (letter) {
+      case "p":
+        return "Pion";
+      case "n":
+        return "Cavalier";
+      case "b":
+        return "Fou";
+      case "q":
+        return "Reine";
+      case "k":
+        return "Roi";
+      case "r":
+        return "Tour";
+      default:
+        return "Erreur";
     }
   };
 
@@ -265,54 +295,42 @@ export default function Playing() {
   };
 
   return (
-    <MainLayout className="gap-4">
+    <MainLayout className="gap-4 flex-col">
       <div className="flex gap-2">
-        <div className="flex flex-col w-3/4 ">
-          <div className="grid grid-cols-8 gap-0">
-            {Array.from({ length: 64 }, (_, index) => {
-              const row = Math.floor(index / 8);
-              const col = index % 8;
-              const isWhite = (row + col) % 2 === 0;
+        <div className="grid grid-cols-8 w-3/4 gap-0 h-min">
+          {Array.from({ length: 64 }, (_, index) => {
+            const row = Math.floor(index / 8);
+            const col = index % 8;
+            const isWhite = (row + col) % 2 === 0;
 
-              const positionKey = getPositionKey(index);
-              const pieceData = chessBoard[positionKey];
+            const positionKey = getPositionKey(index);
+            const pieceData = chessBoard[positionKey];
 
-              const isPossibleMove = possibleMoves.includes(positionKey);
-              const isSelected = positionKey === selectedPiece;
+            const isPossibleMove = possibleMoves.includes(positionKey);
+            const isSelected = positionKey === selectedPiece;
 
-              return (
-                <div
-                  key={index}
-                  className={`aspect-square border border-[#e4a86e] ${
-                    isWhite
-                      ? "bg-[var(--case-blanche)]"
-                      : "bg-[var(--case-noir)]"
-                  } flex items-center justify-center ${
-                    isPossibleMove ? "opacity-50" : ""
-                  } ${isSelected ? "bg-blue-200" : ""}`}
-                  onClick={() => handleChessBoardClick(positionKey)}
-                >
-                  {pieceData && (
-                    <img
-                      src={`/assets/${pieceData.color}${pieceData.piece}.png`}
-                      alt={`${pieceData.color}${pieceData.piece}`}
-                      className="w-3/4 h-3/4"
-                    />
-                  )}
-                </div>
-              );
-            })}
-          </div>
-          <div className="flex gap-2">
-            <Button onClick={() => handleButtonAction("GiveUp")}>
-              Abondonner
-            </Button>
-            <Button onClick={() => handleButtonAction("ProposeADrawing")}>
-              Proposer un match nul
-            </Button>
-          </div>
+            return (
+              <div
+                key={index}
+                className={`aspect-square border border-[#e4a86e] ${
+                  isWhite ? "bg-[var(--case-blanche)]" : "bg-[var(--case-noir)]"
+                } flex items-center justify-center ${
+                  isPossibleMove ? "opacity-50" : ""
+                } ${isSelected ? "bg-blue-200" : ""}`}
+                onClick={() => handleChessBoardClick(positionKey)}
+              >
+                {pieceData && (
+                  <img
+                    src={`/assets/${pieceData.color}${pieceData.piece}.png`}
+                    alt={`${pieceData.color}${pieceData.piece}`}
+                    className="w-3/4 h-3/4"
+                  />
+                )}
+              </div>
+            );
+          })}
         </div>
-        <div className="flex flex-col w-1/3 h-96 justify-start items-start">
+        <div className="flex flex-col w-1/3 justify-start items-start gap-4">
           <div className="flex flex-col justify-start items-start gap-1 border border-black p-2 rounded-lg shadow-md w-full flex-grow-0">
             <h1 className="text-xl">Information de la partie</h1>
             <p>Joueur 1 : {player1}</p>
@@ -324,58 +342,103 @@ export default function Playing() {
               jouer !
             </p>
           </div>
-          <p className="mt-2">Ici devront afficher les pièces jouées</p>
-        </div>
-        {machineState === "ProposeADrawing" && (
-          <ModalWithBackdrop
-            message={
-              playerProposeADrawing !== colorThisPlayer
-                ? "Votre adversaire a proposé un match nul."
-                : "Vous avez proposé un match nul, veuillez patienter pendant que votre adversaire accepte ou refuse."
-            }
-            buttons={
-              playerProposeADrawing !== colorThisPlayer ? (
-                <>
-                  <Button
-                    onClick={() => handleButtonAction("ProposeADrawingAccept")}
-                  >
-                    Accepter
-                  </Button>
-                  <Button
-                    onClick={() => handleButtonAction("ProposeADrawingRefuse")}
-                  >
-                    Refuser
-                  </Button>
-                </>
-              ) : null
-            }
-          />
-        )}
-
-        {machineState === "Draw" && (
-          <ModalWithBackdrop
-            message="Votre adversaire a accepté votre proposition de match nul."
-            buttons={
-              <Button onClick={() => machineSend("DefineStartModePlayGame")}>
-                Quitter
-              </Button>
-            }
-          />
-        )}
-
-        {machineState === "Victory" && (
-          <ModalWithBackdrop
-            message="Bravo vous avez gagné la partie !"
-            buttons={
-              <Button onClick={() => machineSend("DefineStartModePlayGame")}>
-                Quitter
-              </Button>
-            }
+          <div
+            ref={scrollRef}
+            className="h-[500px] overflow-auto border border-black rounded-lg shadow-md w-full overflow-y"
           >
-            <Confetti width={width} height={height} />
-          </ModalWithBackdrop>
-        )}
+            {moves && (
+              <table className="relative table-auto w-full border-collapse">
+                <thead className="bg-gray-100">
+                  <tr className="text-center">
+                    <th className="px-4 py-2 border-b">Joueur</th>
+                    <th className="px-4 py-2 border-b">Pièce</th>
+                    <th className="px-4 py-2 border-b">De</th>
+                    <th className="px-4 py-2 border-b">À</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {moves.map((move, index) => (
+                    <tr
+                      key={index}
+                      className={`text-center ${
+                        index % 2 === 0 ? "bg-gray-50" : "bg-white"
+                      }`}
+                    >
+                      <td className="px-4 py-2 border-t">
+                        {playerNameFromHisColor(move.player)}
+                      </td>
+                      <td className="px-4 py-2 border-t">
+                        {pieceNameFromFirstLetter(move.piece)}
+                      </td>
+                      <td className="px-4 py-2 border-t">{move.from}</td>
+                      <td className="px-4 py-2 border-t">{move.to}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        </div>
       </div>
+      <div className="flex self-start gap-2">
+        <Button onClick={() => handleButtonAction("GiveUp")}>Abondonner</Button>
+        <Button onClick={() => handleButtonAction("ProposeADrawing")}>
+          Proposer un match nul
+        </Button>
+      </div>
+      {machineState === "ProposeADrawing" && (
+        <ModalWithBackdrop
+          message={
+            playerProposeADrawing !== colorThisPlayer
+              ? "Votre adversaire a proposé un match nul."
+              : "Vous avez proposé un match nul, veuillez patienter pendant que votre adversaire accepte ou refuse."
+          }
+          buttons={
+            playerProposeADrawing !== colorThisPlayer ? (
+              <>
+                <Button
+                  onClick={() => handleButtonAction("ProposeADrawingAccept")}
+                >
+                  Accepter
+                </Button>
+                <Button
+                  onClick={() => handleButtonAction("ProposeADrawingRefuse")}
+                >
+                  Refuser
+                </Button>
+              </>
+            ) : null
+          }
+        />
+      )}
+
+      {machineState === "Draw" && (
+        <ModalWithBackdrop
+          message="Votre adversaire a accepté votre proposition de match nul."
+          buttons={
+            <Button onClick={() => machineSend("DefineStartModePlayGame")}>
+              Quitter
+            </Button>
+          }
+        />
+      )}
+
+      {machineState === "Victory" && (
+        <ModalWithBackdrop
+          message={
+            typeVictory === "GiveUp"
+              ? "Bravo, vous avez gagné. Votre adversaire a abondonné"
+              : "Bravo, vous avez gagné en battant votre adversaire"
+          }
+          buttons={
+            <Button onClick={() => machineSend("DefineStartModePlayGame")}>
+              Quitter
+            </Button>
+          }
+        >
+          <Confetti width={width} height={height} />
+        </ModalWithBackdrop>
+      )}
     </MainLayout>
   );
 }

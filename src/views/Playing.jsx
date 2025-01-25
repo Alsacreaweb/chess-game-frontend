@@ -34,11 +34,31 @@ export default function Playing() {
   const [typeVictory, setTypeVictory] = useState("");
   const [moves, setMoves] = useState([]);
   const scrollRef = useRef(null);
+  const [isCheckmate, setIsCheckmate] = useState(false);
+  const [isCheck, setIsCheck] = useState(false);
+  const [colorKingInCheck, setColorKingInCheck] = useState("");
+  const [pieceThatPutsIntoCheck, setPieceThatPutsIntoCheck] = useState("");
 
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
+    fetch(`${import.meta.env.VITE_API_URL}/v1/status`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        chessBoard: chessBoard,
+      }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        setIsCheckmate(data.isCheckmate);
+        setIsCheck(data.isCheck);
+        setColorKingInCheck(data.colorKingInCheck);
+        setPieceThatPutsIntoCheck(data.pieceThatPutsIntoCheck);
+      });
   }, [moves]);
 
   useBeforeUnload(
@@ -48,6 +68,7 @@ export default function Playing() {
   useEffect(() => {
     socketOn("pieceMoved", (data) => {
       setChessBoard(data.chessBoard);
+      console.log(data.moves);
       setMoves(data.moves);
       if (data.playerCurrentColor === "white") {
         setPlayerCurrentColor("white");
@@ -316,7 +337,11 @@ export default function Playing() {
                   isWhite ? "bg-[var(--case-blanche)]" : "bg-[var(--case-noir)]"
                 } flex items-center justify-center ${
                   isPossibleMove ? "opacity-50" : ""
-                } ${isSelected ? "bg-blue-200" : ""}`}
+                } ${isSelected ? "bg-blue-200" : ""} ${
+                  isCheck && positionKey === pieceThatPutsIntoCheck
+                    ? "bg-red-400"
+                    : ""
+                }`}
                 onClick={() => handleChessBoardClick(positionKey)}
               >
                 {pieceData && (
@@ -362,6 +387,10 @@ export default function Playing() {
                       key={index}
                       className={`text-center ${
                         index % 2 === 0 ? "bg-gray-50" : "bg-white"
+                      } ${
+                        move.check.isCheck
+                          ? "bg-red-200 isInCheck relative"
+                          : ""
                       }`}
                     >
                       <td className="px-4 py-2 border-t">

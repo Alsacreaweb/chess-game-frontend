@@ -116,7 +116,15 @@ export default createMachine(
     ),
     PlayingYourTurn: state(
       transition("PlayingNotYourTurn", "PlayingNotYourTurn"),
-      transition("ProposeADrawing", "ProposeADrawing"),
+      transition(
+        "ProposeADrawing",
+        "ProposeADrawing",
+        guard((_, event) => event.playerProposeADrawing !== ""),
+        reduce((ctx, event) => ({
+          ...ctx,
+          playerProposeADrawing: event.playerProposeADrawing,
+        }))
+      ),
       transition("Draw", "Draw"),
       transition("DrawRefuse", "DrawRefuse"),
       transition("GiveUp", "GiveUp"),

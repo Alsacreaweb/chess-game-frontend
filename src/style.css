@@ -32,3 +32,16 @@
     filter: blur(5px);
     transition: filter 0.3s ease;
   }
+
+  .isInCheck::after{
+    content: "⚠️";
+    position: absolute;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    font-size: 1.5rem;
+  }

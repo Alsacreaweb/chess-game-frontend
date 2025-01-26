@@ -25,6 +25,7 @@ export default function Playing() {
     socketEmit,
     socketOn,
     toast,
+    purgeContext,
   } = useContext(PlayingContext);
   const [possibleMoves, setPossibleMoves] = useState([]);
   const [selectedPiece, setSelectedPiece] = useState(null);
@@ -55,11 +56,18 @@ export default function Playing() {
       .then((response) => response.json())
       .then((data) => {
         setIsCheckmate(data.isCheckmate);
+        setIsPlayerVictory(data.isVictory);
         setIsCheck(data.isCheck);
         setColorKingInCheck(data.colorKingInCheck);
         setPieceThatPutsIntoCheck(data.pieceThatPutsIntoCheck);
       });
   }, [moves]);
+
+  useEffect(() => {
+    if (isCheckmate) {
+      machineSend("Victory");
+    }
+  }, [isCheckmate]);
 
   useBeforeUnload(
     "Vous avez une partie en cours. Êtes-vous sûr de vouloir quitter ?"
@@ -444,11 +452,7 @@ export default function Playing() {
       {machineState === "Draw" && (
         <ModalWithBackdrop
           message="Votre adversaire a accepté votre proposition de match nul."
-          buttons={
-            <Button onClick={() => machineSend("DefineStartModePlayGame")}>
-              Quitter
-            </Button>
-          }
+          buttons={<Button onClick={() => purgeContext("")}>Quitter</Button>}
         />
       )}
 
@@ -457,7 +461,9 @@ export default function Playing() {
           message={
             typeVictory === "GiveUp"
               ? "Bravo, vous avez gagné. Votre adversaire a abondonné"
-              : "Bravo, vous avez gagné en battant votre adversaire"
+              : isPlayerVictory === substring(colorThisPlayer, 0, 1)
+              ? "Bravo, vous avez gagné en battant votre adversaire"
+              : "Vous avez perdu, votre adversaire a gagné"
           }
           buttons={
             <Button onClick={() => machineSend("DefineStartModePlayGame")}>
@@ -465,7 +471,9 @@ export default function Playing() {
             </Button>
           }
         >
-          <Confetti width={width} height={height} />
+          {isPlayerVictory === substring(colorThisPlayer, 0, 1) && (
+            <Confetti width={width} height={height} />
+          )}
         </ModalWithBackdrop>
       )}
     </MainLayout>

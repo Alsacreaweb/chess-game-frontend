@@ -14,7 +14,7 @@ const PlayingProvider = ({ children }) => {
   const [colorPlayer2, setColorPlayer2] = useState("");
   const [playerCurrentColor, setPlayerCurrentColor] = useState("white"); // The first player is white
   const [machineState, machineSend, machineContext] = useMachine(machine);
-  const [chessBoard, setChessBoard] = useState({
+  const chessBoardStartPlaying = {
     a1: {
       piece: "r",
       color: "w",
@@ -143,7 +143,8 @@ const PlayingProvider = ({ children }) => {
       piece: "r",
       color: "b",
     },
-  });
+  };
+  const [chessBoard, setChessBoard] = useState(chessBoardStartPlaying);
   const { socketRef, socketConnected, socketEmit, socketOn, socketOff } =
     useWebSocket(import.meta.env.VITE_WS_URL);
   const fetchGameIdExist = async (gameId) => {
@@ -196,6 +197,16 @@ const PlayingProvider = ({ children }) => {
     }
     window.history.pushState({}, "", currentUrl.toString());
   };
+  const purgeContext = () => {
+    setGameId("");
+    setPlayer1("");
+    setColorPlayer1("");
+    setPlayer2("");
+    setColorPlayer2("");
+    setChessBoard(chessBoardStartPlaying);
+    machineSend("DefineStartModePlayGame");
+    updateUrlWithParams({});
+  };
 
   return (
     <PlayingContext.Provider
@@ -227,6 +238,7 @@ const PlayingProvider = ({ children }) => {
         fetchGameIdExist,
         updateUrlWithParams,
         toast,
+        purgeContext,
       }}
     >
       <ToastContainer

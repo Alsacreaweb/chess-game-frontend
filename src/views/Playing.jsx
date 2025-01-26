@@ -86,7 +86,7 @@ export default function Playing() {
     });
     socketOn("action", (data) => {
       if (data.type === "giveUp") {
-        setIsPlayerVictory(data.playerVictory === "w" ? "black" : "white");
+        setIsPlayerVictory(data.playerVictory);
         setTypeVictory("GiveUp");
         machineSend("Victory");
       }
@@ -97,10 +97,7 @@ export default function Playing() {
         machineSend("Draw");
       }
       if (data.type === "proposeADrawingRefuse") {
-        if (
-          playerProposeADrawing === colorThisPlayer ||
-          playerProposeADrawing !== undefined
-        ) {
+        if (data.playerProposeADrawingRefuse !== colorThisPlayer) {
           toast("Votre adversaire a refusé votre proposition de match nul.");
         }
         if (data.playerCurrentColor === colorThisPlayer) {
@@ -318,6 +315,7 @@ export default function Playing() {
       socketEmit("action", {
         action: "proposeADrawingRefuse",
         playerCurrentColor: playerCurrentColor,
+        player: colorThisPlayer,
         gameId: gameId,
       });
     }
@@ -461,17 +459,13 @@ export default function Playing() {
           message={
             typeVictory === "GiveUp"
               ? "Bravo, vous avez gagné. Votre adversaire a abondonné"
-              : isPlayerVictory === substring(colorThisPlayer, 0, 1)
+              : isPlayerVictory === colorThisPlayer.substring(0, 1)
               ? "Bravo, vous avez gagné en battant votre adversaire"
               : "Vous avez perdu, votre adversaire a gagné"
           }
-          buttons={
-            <Button onClick={() => machineSend("DefineStartModePlayGame")}>
-              Quitter
-            </Button>
-          }
+          buttons={<Button onClick={() => purgeContext("")}>Quitter</Button>}
         >
-          {isPlayerVictory === substring(colorThisPlayer, 0, 1) && (
+          {isPlayerVictory === colorThisPlayer.substring(0, 1) && (
             <Confetti width={width} height={height} />
           )}
         </ModalWithBackdrop>

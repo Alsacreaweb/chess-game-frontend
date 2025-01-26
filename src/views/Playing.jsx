@@ -76,7 +76,6 @@ export default function Playing() {
   useEffect(() => {
     socketOn("pieceMoved", (data) => {
       setChessBoard(data.chessBoard);
-      console.log(data.moves);
       setMoves(data.moves);
       if (data.playerCurrentColor === "white") {
         setPlayerCurrentColor("white");
@@ -449,7 +448,11 @@ export default function Playing() {
 
       {machineState === "Draw" && (
         <ModalWithBackdrop
-          message="Votre adversaire a accepté votre proposition de match nul."
+          message={
+            playerProposeADrawing === colorThisPlayer
+              ? "Votre adversaire a accepté votre proposition de match nul."
+              : "Vous avez accepté la proposition de match nul."
+          }
           buttons={<Button onClick={() => purgeContext("")}>Quitter</Button>}
         />
       )}

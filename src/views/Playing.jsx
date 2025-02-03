@@ -37,8 +37,8 @@ export default function Playing() {
   const scrollRef = useRef(null);
   const [isCheckmate, setIsCheckmate] = useState(false);
   const [isCheck, setIsCheck] = useState(false);
-  const [colorKingInCheck, setColorKingInCheck] = useState("");
   const [pieceThatPutsIntoCheck, setPieceThatPutsIntoCheck] = useState("");
+  const [isNull, setIsNull] = useState(false);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -58,8 +58,8 @@ export default function Playing() {
         setIsCheckmate(data.isCheckmate);
         setIsPlayerVictory(data.isVictory);
         setIsCheck(data.isCheck);
-        setColorKingInCheck(data.colorKingInCheck);
         setPieceThatPutsIntoCheck(data.pieceThatPutsIntoCheck);
+        setIsNull(data.isNull);
       });
   }, [moves]);
 
@@ -67,7 +67,10 @@ export default function Playing() {
     if (isCheckmate) {
       machineSend("Victory");
     }
-  }, [isCheckmate]);
+    if (isNull) {
+      machineSend("Draw");
+    }
+  }, [isCheckmate, isNull]);
 
   useBeforeUnload(
     "Vous avez une partie en cours. Êtes-vous sûr de vouloir quitter ?"
@@ -487,7 +490,9 @@ export default function Playing() {
       {machineState === "Draw" && (
         <ModalWithBackdrop
           message={
-            playerProposeADrawing === colorThisPlayer
+            isNull
+              ? "L'un des rois dans la partie ne peut plus se déplacer. Le match est donc nul."
+              : playerProposeADrawing === colorThisPlayer
               ? "Votre adversaire a accepté votre proposition de match nul."
               : "Vous avez accepté la proposition de match nul."
           }

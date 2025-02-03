@@ -187,6 +187,20 @@ export default function Playing() {
     updatedBoard[destination] = piece;
     delete updatedBoard[selectedPiece];
 
+    // Small castling management
+    if (
+      piece.piece === "k" &&
+      Math.abs(destination.charCodeAt(0) - selectedPiece.charCodeAt(0)) === 2
+    ) {
+      if (destination === "g1") {
+        updatedBoard["f1"] = updatedBoard["h1"];
+        delete updatedBoard["h1"];
+      } else if (destination === "g8") {
+        updatedBoard["f8"] = updatedBoard["h8"];
+        delete updatedBoard["h8"];
+      }
+    }
+
     setChessBoard(updatedBoard);
     setSelectedPiece(null);
     setPossibleMoves([]);

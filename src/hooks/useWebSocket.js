@@ -10,12 +10,10 @@ export const useWebSocket = (url) => {
       socketRef.current = io(url);
 
       socketRef.current.on("connect", () => {
-        console.log("WebSocket connecté avec l'ID:", socketRef.current.id);
         setSocketConnected(true);
       });
 
       socketRef.current.on("disconnect", () => {
-        console.log("WebSocket déconnecté");
         setSocketConnected(false);
       });
     }

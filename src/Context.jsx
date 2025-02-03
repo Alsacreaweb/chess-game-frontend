@@ -176,7 +176,6 @@ const PlayingProvider = ({ children }) => {
       }
       return { data };
     } catch (error) {
-      console.error(error);
       return false;
     }
   };

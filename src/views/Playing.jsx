@@ -276,7 +276,7 @@ export default function Playing() {
             player: colorThisPlayer,
             gameId: gameId,
           });
-          machineSend("DefineStartModePlayGame");
+          purgeContext();
         }
       });
     }
@@ -337,7 +337,31 @@ export default function Playing() {
   return (
     <MainLayout className="gap-4 flex-col">
       <div className="flex gap-2">
-        <div className="grid grid-cols-8 w-3/4 gap-0 h-min">
+        <div className="grid grid-cols-8 w-full gap-0 h-min relative">
+          <div className="absolute top-0 left-[-15px] h-full">
+            <div className="flex flex-col h-full text-2xl">
+              {Array.from({ length: 8 }, (_, idx) => (
+                <div
+                  key={idx}
+                  className="flex-1 flex justify-center items-center"
+                >
+                  {8 - idx}
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="absolute top-[-35px] left-0 w-full">
+            <div className="flex">
+              {Array.from("abcdefgh").map((letter, index) => (
+                <div
+                  key={index}
+                  className="flex-1 flex justify-center items-center text-2xl"
+                >
+                  {letter}
+                </div>
+              ))}
+            </div>
+          </div>
           {Array.from({ length: 64 }, (_, index) => {
             const row = Math.floor(index / 8);
             const col = index % 8;
@@ -388,7 +412,7 @@ export default function Playing() {
           </div>
           <div
             ref={scrollRef}
-            className="h-[500px] overflow-auto border border-black rounded-lg shadow-md w-full overflow-y"
+            className="h-full max-h-[550px] overflow-y-auto overflow-x-hidden border border-black rounded-lg shadow-md w-full overflow-y"
           >
             {moves && (
               <table className="relative table-auto w-full border-collapse">
@@ -467,7 +491,7 @@ export default function Playing() {
               ? "Votre adversaire a accepté votre proposition de match nul."
               : "Vous avez accepté la proposition de match nul."
           }
-          buttons={<Button onClick={() => purgeContext("")}>Quitter</Button>}
+          buttons={<Button onClick={() => purgeContext()}>Quitter</Button>}
         />
       )}
 
@@ -480,11 +504,12 @@ export default function Playing() {
               ? "Bravo, vous avez gagné en battant votre adversaire"
               : "Vous avez perdu, votre adversaire a gagné"
           }
-          buttons={<Button onClick={() => purgeContext("")}>Quitter</Button>}
+          buttons={<Button onClick={() => purgeContext()}>Quitter</Button>}
         >
-          {isPlayerVictory === colorThisPlayer.substring(0, 1) && (
-            <Confetti width={width} height={height} />
-          )}
+          {isPlayerVictory === colorThisPlayer.substring(0, 1) ||
+            (typeVictory === "GiveUp" && (
+              <Confetti width={width} height={height} />
+            ))}
         </ModalWithBackdrop>
       )}
     </MainLayout>

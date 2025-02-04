@@ -74,7 +74,7 @@ export default function InputPlayerName() {
           <div className="flex gap-4">
             <label htmlFor="white">
               <img
-                src="assets/wk.png"
+                src={`${import.meta.env.VITE_APP_URL}/assets/wk.png`}
                 className={
                   colorPlayer1 === "white" ? "opacity-50" : "opacity-100"
                 }

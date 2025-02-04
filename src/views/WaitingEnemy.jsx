@@ -24,7 +24,7 @@ export default function WaitPlayer() {
   );
 
   const handleCopyLink = () => {
-    const baseUrl = new URL(window.location.origin);
+    const baseUrl = new URL(import.meta.env.VITE_APP_URL);
     baseUrl.searchParams.set("gameId", gameId);
     copyData(baseUrl.toString(), toast);
   };

@@ -392,7 +392,7 @@ export default function Playing() {
               >
                 {pieceData && (
                   <img
-                    src={`/assets/${pieceData.color}${pieceData.piece}.png`}
+                    src={`assets/${pieceData.color}${pieceData.piece}.png`}
                     alt={`${pieceData.color}${pieceData.piece}`}
                     className="w-3/4 h-3/4"
                   />

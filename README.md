@@ -1,8 +1,22 @@
-# React + Vite
+## Definition de la machine et de ses états
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+```mermaid
+flowchart TD
+A[DefineStartModePlayGame]
+A --> B[InputPlayerName]
+A --> C[InputGameID]
+B --> D[WaitingEnemy]
+D --> E[Playing]
+C --> E
 
-Currently, two official plugins are available:
+E --> F[PlayingYourTurn]
+E --> G[PlayingNotYourTurn]
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+F --> H[ProposeADraw]
+G --> H
+H --> I[Draw]
+
+F --> J[GiveUp]
+F --> K[Victory]
+G --> K
+```

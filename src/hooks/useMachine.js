@@ -7,8 +7,8 @@ export function useMachine(machine) {
     serviceRef.current = interpret(machine, () => {
       setMachineState(serviceRef.current.machine.current);
       setMachineContext(serviceRef.current.context);
-      console.log("machineState", serviceRef.current.machine.current);
-      console.log("machineContext", serviceRef.current.context);
+      // console.log("machineState", serviceRef.current.machine.current);
+      // console.log("machineContext", serviceRef.current.context);
     });
   }
 

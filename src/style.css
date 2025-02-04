@@ -1,11 +1,47 @@
 :root {
     /* Couleurs pour le plateau d'échec */
-    --case-blanche: #FFFFFF;    /* Couleur pour les cases blanches */
-    --case-noir: #333333;       /* Couleur pour les cases noires */
+    --case-blanche: #fece9e;    /* Couleur pour les cases blanches */
+    --case-noir: #d18b46;       /* Couleur pour les cases noires */
     
     /* Couleurs de l'interface */
     --bg-color: #F5F5F5;        /* Couleur de fond */
     --primary-color: #007BFF;   /* Couleur primaire pour les éléments importants/différenciés */
     --secondary-color: #FF5733; /* Couleur secondaire pour les détails ou textes */
     --accent-color: #FF9900;    /* Couleur d'accent pour les boutons ou les surlignages */
+  }
+
+  .swal2-confirm {
+    background-color: var(--accent-color) !important;
+    color: white !important;
+  }
+
+  body.swal2-shown > [aria-hidden='true'] {
+    transition: 0.1s filter;
+    filter: blur(5px);
+  }
+
+  .custom-swal-container {
+    z-index: 1000 !important;
+  }
+  
+  .custom-swal-popup {
+    z-index: 1000 !important;
+  }
+
+  .blur {
+    filter: blur(5px);
+    transition: filter 0.3s ease;
+  }
+
+  .isInCheck::after{
+    content: "⚠️";
+    position: absolute;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    font-size: 1.5rem;
   }
